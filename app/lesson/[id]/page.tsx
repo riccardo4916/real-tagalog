@@ -1,16 +1,49 @@
 "use client";
 
-import { useState } from "react";
+import { use, useState } from "react";
 import Link from "next/link";
+import { lessons } from "@/data/lessons";
 
-export default function LessonOnePage() {
+type LessonPageProps = {
+  params: Promise<{
+    id: string;
+  }>;
+};
+
+export default function LessonPage({ params }: LessonPageProps) {
+  const { id } = use(params);
+
+  const lessonId = Number(id);
+  const lesson = lessons.find((item) => item.id === lessonId);
+
   const [step, setStep] = useState(1);
   const [answer, setAnswer] = useState<string | null>(null);
+
+  if (!lesson) {
+    return (
+      <main className="min-h-screen bg-slate-50 px-6 py-16">
+        <div className="mx-auto max-w-3xl">
+          <h1 className="text-4xl font-bold text-slate-900">
+            Lesson not found
+          </h1>
+
+          <Link
+            href="/learn"
+            className="mt-6 inline-block text-blue-700 hover:underline"
+          >
+            Back to learning
+          </Link>
+        </div>
+      </main>
+    );
+  }
 
   function nextStep() {
     setStep((current) => current + 1);
     setAnswer(null);
   }
+
+  const nextLesson = lessons.find((item) => item.id === lesson.id + 1);
 
   return (
     <main className="min-h-screen bg-slate-50 px-6 py-12">
@@ -24,7 +57,7 @@ export default function LessonOnePage() {
           </Link>
 
           <p className="text-sm font-semibold text-slate-500">
-            Lesson 1
+            Lesson {lesson.id}
           </p>
         </div>
 
@@ -42,11 +75,11 @@ export default function LessonOnePage() {
             </p>
 
             <h1 className="mt-3 text-5xl font-bold text-slate-900">
-              Nasan ka?
+              {lesson.phrase}
             </h1>
 
             <p className="mt-3 text-xl text-slate-600">
-              Where are you?
+              {lesson.translation}
             </p>
 
             <div className="mt-10 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
@@ -54,8 +87,9 @@ export default function LessonOnePage() {
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
                   Standard
                 </p>
+
                 <p className="mt-1 text-lg font-medium text-slate-900">
-                  Nasaan ka?
+                  {lesson.standard}
                 </p>
               </div>
 
@@ -63,26 +97,26 @@ export default function LessonOnePage() {
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
                   Everyday
                 </p>
+
                 <p className="mt-1 text-lg font-medium text-slate-900">
-                  Nasan ka?
+                  {lesson.everyday}
                 </p>
               </div>
 
               <div className="mt-6">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                  Meaning
+                  Explanation
                 </p>
+
                 <p className="mt-1 text-slate-600">
-                  “Nasaan” means “where” when asking where a person or thing is.
-                  In everyday conversation, Filipinos often shorten it to
-                  “Nasan”.
+                  {lesson.explanation}
                 </p>
               </div>
             </div>
 
             <button
               onClick={nextStep}
-              className="mt-10 w-full rounded-xl bg-blue-700 px-8 py-4 font-semibold text-white transition hover:bg-blue-800"
+              className="mt-10 w-full rounded-xl bg-blue-700 px-8 py-4 font-semibold text-white hover:bg-blue-800"
             >
               Continue
             </button>
@@ -100,32 +134,30 @@ export default function LessonOnePage() {
             </h1>
 
             <div className="mt-10 space-y-5">
-              <div className="max-w-md rounded-2xl rounded-bl-sm bg-white p-5 shadow-sm">
-                <p className="font-semibold text-slate-900">
-                  Nasan ka na?
-                </p>
-                <p className="mt-1 text-sm text-slate-500">
-                  Where are you now?
-                </p>
-              </div>
+              {lesson.dialogue.map((line, index) => (
+                <div
+                  key={index}
+                  className={`max-w-md rounded-2xl p-5 shadow-sm ${
+                    line.speaker === "right"
+                      ? "ml-auto bg-blue-700 text-white"
+                      : "bg-white text-slate-900"
+                  }`}
+                >
+                  <p className="font-semibold">
+                    {line.tagalog}
+                  </p>
 
-              <div className="ml-auto max-w-md rounded-2xl rounded-br-sm bg-blue-700 p-5 text-white">
-                <p className="font-semibold">
-                  Nasa trabaho pa ako.
-                </p>
-                <p className="mt-1 text-sm text-blue-100">
-                  I'm still at work.
-                </p>
-              </div>
-
-              <div className="max-w-md rounded-2xl rounded-bl-sm bg-white p-5 shadow-sm">
-                <p className="font-semibold text-slate-900">
-                  Okay, ingat!
-                </p>
-                <p className="mt-1 text-sm text-slate-500">
-                  Okay, take care!
-                </p>
-              </div>
+                  <p
+                    className={`mt-1 text-sm ${
+                      line.speaker === "right"
+                        ? "text-blue-100"
+                        : "text-slate-500"
+                    }`}
+                  >
+                    {line.english}
+                  </p>
+                </div>
+              ))}
             </div>
 
             <div className="mt-10 rounded-2xl border border-yellow-200 bg-yellow-50 p-6">
@@ -134,14 +166,13 @@ export default function LessonOnePage() {
               </p>
 
               <p className="mt-2 text-yellow-800">
-                “Nasan ka na?” is extremely common in chats and everyday
-                conversation.
+                {lesson.note}
               </p>
             </div>
 
             <button
               onClick={nextStep}
-              className="mt-10 w-full rounded-xl bg-blue-700 px-8 py-4 font-semibold text-white transition hover:bg-blue-800"
+              className="mt-10 w-full rounded-xl bg-blue-700 px-8 py-4 font-semibold text-white hover:bg-blue-800"
             >
               Practice
             </button>
@@ -155,15 +186,11 @@ export default function LessonOnePage() {
             </p>
 
             <h1 className="mt-3 text-4xl font-bold text-slate-900">
-              How would you say “Where are you?”
+              {lesson.quiz.question}
             </h1>
 
             <div className="mt-10 space-y-4">
-              {[
-                "Nasaan ikaw?",
-                "Nasan ka?",
-                "Saan ako?",
-              ].map((option) => (
+              {lesson.quiz.options.map((option) => (
                 <button
                   key={option}
                   onClick={() => setAnswer(option)}
@@ -181,21 +208,21 @@ export default function LessonOnePage() {
             {answer && (
               <div
                 className={`mt-6 rounded-2xl p-5 ${
-                  answer === "Nasan ka?"
+                  answer === lesson.quiz.correctAnswer
                     ? "bg-green-50 text-green-800"
                     : "bg-red-50 text-red-800"
                 }`}
               >
-                {answer === "Nasan ka?"
-                  ? "Correct! 🎉 “Nasan ka?” is the natural everyday form."
-                  : "Not quite. The natural everyday answer is “Nasan ka?”"}
+                {answer === lesson.quiz.correctAnswer
+                  ? "Correct! 🎉"
+                  : `Not quite. The correct answer is “${lesson.quiz.correctAnswer}”.`}
               </div>
             )}
 
             <button
               onClick={nextStep}
-              disabled={answer !== "Nasan ka?"}
-              className="mt-10 w-full rounded-xl bg-blue-700 px-8 py-4 font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+              disabled={answer !== lesson.quiz.correctAnswer}
+              className="mt-10 w-full rounded-xl bg-blue-700 px-8 py-4 font-semibold text-white hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-slate-300"
             >
               Continue
             </button>
@@ -204,38 +231,41 @@ export default function LessonOnePage() {
 
         {step === 4 && (
           <section className="mt-12 text-center">
-            <div className="text-6xl">
-              🎉
-            </div>
+            <div className="text-6xl">🎉</div>
 
             <h1 className="mt-6 text-4xl font-bold text-slate-900">
               Lesson complete!
             </h1>
 
             <p className="mt-4 text-lg text-slate-600">
-              You learned your first everyday Tagalog phrase.
+              You learned:
             </p>
 
             <div className="mt-10 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-              <p className="text-sm font-semibold text-slate-400">
-                YOU LEARNED
-              </p>
-
-              <p className="mt-3 text-3xl font-bold text-slate-900">
-                Nasan ka?
+              <p className="text-3xl font-bold text-slate-900">
+                {lesson.phrase}
               </p>
 
               <p className="mt-2 text-slate-600">
-                Where are you?
+                {lesson.translation}
               </p>
             </div>
 
-            <Link
-              href="/learn"
-              className="mt-10 inline-block rounded-xl bg-blue-700 px-8 py-4 font-semibold text-white transition hover:bg-blue-800"
-            >
-              Back to learning
-            </Link>
+            {nextLesson ? (
+              <Link
+                href={`/lesson/${nextLesson.id}`}
+                className="mt-10 inline-block rounded-xl bg-blue-700 px-8 py-4 font-semibold text-white hover:bg-blue-800"
+              >
+                Next lesson →
+              </Link>
+            ) : (
+              <Link
+                href="/learn"
+                className="mt-10 inline-block rounded-xl bg-blue-700 px-8 py-4 font-semibold text-white hover:bg-blue-800"
+              >
+                Back to learning
+              </Link>
+            )}
           </section>
         )}
       </div>
