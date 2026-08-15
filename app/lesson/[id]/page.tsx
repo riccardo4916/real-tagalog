@@ -46,9 +46,32 @@ export default async function LessonPage({
     })
     .single();
 
-  if (error || !lesson) {
-    notFound();
-  }
+  if (error) {
+  return (
+    <main className="min-h-screen bg-slate-50 p-10">
+      <h1 className="text-3xl font-bold text-red-600">
+        Supabase error
+      </h1>
 
+      <pre className="mt-6 whitespace-pre-wrap rounded-xl bg-white p-6">
+        {JSON.stringify(error, null, 2)}
+      </pre>
+    </main>
+  );
+}
+
+if (!lesson) {
+  return (
+    <main className="min-h-screen bg-slate-50 p-10">
+      <h1 className="text-3xl font-bold">
+        Lesson not found in database
+      </h1>
+
+      <p className="mt-4">
+        Requested lesson ID: {lessonId}
+      </p>
+    </main>
+  );
+}
   return <LessonClient lesson={lesson} />;
 }
